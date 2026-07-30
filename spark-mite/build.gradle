@@ -1,0 +1,127 @@
+plugins {
+    id 'fml-loom' version '0.1'
+    id 'com.gradleup.shadow'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+configurations {
+    fml
+    shade
+    implementation.extendsFrom shade
+}
+
+configurations.matching {
+    it.name in ['apiElements', 'runtimeElements', 'compileClasspath', 'runtimeClasspath', 'testCompileClasspath', 'testRuntimeClasspath']
+}.configureEach {
+    attributes {
+        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 17)
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    fml "com.github.MinecraftIsTooEasy:FishModLoader:3.4.2"
+    implementation "com.github.MinecraftIsTooEasy:FishModLoader:3.4.2"
+    implementation "com.github.MinecraftIsTooEasy:RustedIronCore:1.5.5"
+
+    shade project(':spark-common')
+    implementation 'com.github.MinecraftIsTooEasy:Gson:2.10.1'
+    implementation 'com.github.MinecraftIsTooEasy:FastUtil:8.5.12'
+}
+
+def fmlResolvedFile = configurations.fml.files.iterator().next()
+
+loom {
+    accessWidenerPath = file("src/main/resources/spark-mite.accesswidener")
+    mergedMinecraftJar()
+    mods {
+        "spark-mite" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+loom.setFML(fmlResolvedFile)
+dependencies.add('mappings', loom.fmlMCPMappings())
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fml.mod.json') {
+        expand 'version': project.version
+    }
+    from(rootProject.file('spark-fabric/src/main/resources/assets/spark/icon.png')) {
+        into 'assets/spark_mite'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+shadowJar {
+    archiveClassifier = ''
+    configurations = [project.configurations.shade]
+
+    relocate 'net.kyori.adventure', 'me.lucko.spark.lib.adventure'
+    relocate 'net.kyori.examination', 'me.lucko.spark.lib.adventure.examination'
+    relocate 'net.kyori.option', 'me.lucko.spark.lib.adventure.option'
+    relocate 'net.bytebuddy', 'me.lucko.spark.lib.bytebuddy'
+    relocate 'com.google.protobuf', 'me.lucko.spark.lib.protobuf'
+    relocate 'org.objectweb.asm', 'me.lucko.spark.lib.asm'
+    relocate 'one.profiler', 'me.lucko.spark.lib.asyncprofiler'
+    relocate 'me.lucko.bytesocks.client', 'me.lucko.spark.lib.bytesocks'
+    relocate 'org.java_websocket', 'me.lucko.spark.lib.bytesocks.ws'
+
+    project.applyExcludes(delegate)
+}
+
+jar {
+    archiveClassifier = 'dev'
+}
+
+assemble.dependsOn tasks.shadowJar
+
+tasks.named('runClient', JavaExec).configure { exec ->
+    def user = project.hasProperty('username') ? project.username : 'Dev'
+    exec.setArgs(['--username', user, '--session', '0', '--width', '854', '--height', '480'])
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = project.maven_group
+            artifactId = project.archives_base_name
+            version = project.mod_version
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = "ModdedMITE"
+            url = uri("https://maven.limingzxc.top/repository/maven-releases/")
+            credentials {
+                // Read only from gradle.properties (user level, your gradle_home)
+                username = project.findProperty("nexusUsername")
+                password = project.findProperty("nexusPassword")
+            }
+        }
+    }
+}

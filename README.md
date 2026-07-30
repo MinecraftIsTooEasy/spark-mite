@@ -8,6 +8,18 @@
   spark is a performance profiler for Minecraft clients, servers and proxies.
 </h3>
 
+## MITE 1.6.4 port
+
+This branch contains a FishModLoader 3.4.2 port in the `spark-mite` module. The original `spark-api` and `spark-common` implementations are retained; only the Minecraft platform layer is replaced.
+
+* `/spark` runs the server profiler and is available to the console and operators.
+* `/sparkc` and `/sparkclient` run a profiler in the local client JVM.
+* Tick timings, health reports, Java sampling, heap analysis, GC monitoring, activity logging, player ping, server configuration, world counts, chunk/entity counts, viewer uploads, and the background profiler are supported.
+* MITE has no modern chat component click events. Viewer URLs are emitted as visible chat text and remain detectable by MITE's URL handling.
+* async-profiler does not support Windows; spark automatically uses its built-in Java sampler there. Linux native libraries are included in the release jar.
+
+Build the release jar with `./gradlew :spark-mite:build`. The output is `spark-mite/build/libs/spark-mite-1.10.0-mite.jar` and requires RustedIronCore 1.5.3 or newer.
+
 #### Useful Links
 * [**Website**](https://spark.lucko.me/) - browse the project homepage
 * [**Documentation**](https://spark.lucko.me/docs) - read documentation and usage guides
