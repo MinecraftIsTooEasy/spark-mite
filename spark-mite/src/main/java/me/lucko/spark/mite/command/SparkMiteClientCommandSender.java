@@ -13,8 +13,9 @@
 package me.lucko.spark.mite.command;
 
 import me.lucko.spark.common.command.sender.AbstractCommandSender;
+import me.lucko.spark.mite.MiteChatComponentSerializer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.minecraft.ChatMessageComponent;
 import net.minecraft.Minecraft;
 
 import java.nio.charset.StandardCharsets;
@@ -41,9 +42,13 @@ public final class SparkMiteClientCommandSender extends AbstractCommandSender<Mi
 
     @Override
     public void sendMessage(Component message) {
-        String legacy = LegacyComponentSerializer.legacySection().serialize(message);
+        ChatMessageComponent component = MiteChatComponentSerializer.serialize(message);
+        if (this.delegate.thePlayer != null) {
+            this.delegate.thePlayer.sendChatToPlayer(component);
+            return;
+        }
         if (this.delegate.ingameGUI != null) {
-            this.delegate.ingameGUI.getChatGUI().printChatMessage(legacy);
+            this.delegate.ingameGUI.getChatGUI().printChatMessage(component.toStringWithFormatting(true));
         }
     }
 

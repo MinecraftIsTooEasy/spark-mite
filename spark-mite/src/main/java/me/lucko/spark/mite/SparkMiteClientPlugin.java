@@ -92,10 +92,10 @@ public final class SparkMiteClientPlugin implements SparkPlugin {
 
     @Override
     public String getVersion() {
-        return FishModLoader.getModContainer("spark_mite")
+        return FishModLoader.getModContainer("spark")
                 .map(ModContainer::getMetadata)
                 .map(metadata -> metadata.getVersion().getFriendlyString())
-                .orElse("1.10.0-mite");
+                .orElse("unknown");
     }
 
     @Override
