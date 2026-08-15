@@ -1,22 +1,13 @@
 pluginManagement {
     repositories {
-        mavenLocal()
-        maven {
-            name = 'ModdedMITE'
-            url = 'https://maven.limingzxc.top/repository/maven-public/'
-        }
+        maven { url = 'https://BTW-Community.github.io/BTW-gradle' }
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+        maven { name = 'Legacy Fabric'; url = 'https://maven.legacyfabric.net' }
+        maven { name = 'Jitpack'; url = 'https://jitpack.io' }
         gradlePluginPortal()
         mavenCentral()
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
     }
 }
 
-rootProject.name = 'spark-mite'
-include (
-        'spark-api',
-        'spark-common',
-        'spark-mite',
-)
+rootProject.name = 'spark-btw'
+include 'spark-api', 'spark-common', 'spark-btw'

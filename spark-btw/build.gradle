@@ -1,0 +1,152 @@
+import net.fabricmc.loom.api.processor.MinecraftJarProcessor
+import net.fabricmc.loom.api.processor.ProcessorContext
+import net.fabricmc.loom.api.processor.SpecContext
+
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+
+plugins {
+    id 'maven-publish'
+    id 'fabric-loom' version '1.4-SNAPSHOT'
+    id 'com.gradleup.shadow'
+}
+
+base {
+    archivesName = rootProject.archives_base_name
+}
+
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
+
+def btwProjectDir = rootProject.projectDir.toString()
+
+loom {
+    setIntermediaryUrl('https://maven.legacyfabric.net/net/legacyfabric/intermediary/%1$s/intermediary-%1$s-v2.jar')
+    addMinecraftJarProcessor(BTWJarReplacer, 'BTWJarReplacer', btwProjectDir)
+    mods {
+        spark_btw {
+            sourceSet sourceSets.main
+        }
+    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+def lwjglVersion = System.getProperty('os.name').toLowerCase().contains('mac') ? '2.9.1' : '2.9.0'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+    mappings 'btw.community:mappings:1.0.3'
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+    implementation 'net.fabricmc:fabric-loom:1.4-SNAPSHOT'
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+    implementation "org.lwjgl.lwjgl:lwjgl_util:${lwjglVersion}"
+    implementation "org.lwjgl.lwjgl:lwjgl:${lwjglVersion}"
+    implementation "org.lwjgl.lwjgl:lwjgl-platform:${lwjglVersion}"
+    implementation fileTree(dir: rootProject.file('libs'), include: '**.zip')
+    implementation 'com.google.guava:guava:14.0.1'
+    implementation 'com.google.code.gson:gson:2.2.2'
+    implementation 'com.typesafe:config:1.4.5'
+
+    shade project(':spark-common')
+}
+
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute module('org.lwjgl.lwjgl:lwjgl_util:2.9.1-nightly-20130708-debug3') using module("org.lwjgl.lwjgl:lwjgl_util:${lwjglVersion}")
+            substitute module('org.lwjgl.lwjgl:lwjgl:2.9.1-nightly-20130708-debug3') using module("org.lwjgl.lwjgl:lwjgl:${lwjglVersion}")
+        }
+        force "org.lwjgl.lwjgl:lwjgl-platform:${lwjglVersion}"
+    }
+}
+
+processResources {
+    def expandedInfo = [version: project.version, btw_version: rootProject.btw_version, minecraft_version: rootProject.minecraft_version]
+    inputs.properties expandedInfo
+    filesMatching('fabric.mod.json') {
+        expand expandedInfo
+    }
+}
+
+java {
+    withSourcesJar()
+}
+
+shadowJar {
+    archiveClassifier = 'dev-shadow'
+    configurations = [project.configurations.shade]
+    relocate 'net.kyori.adventure', 'me.lucko.spark.lib.adventure'
+    relocate 'net.kyori.examination', 'me.lucko.spark.lib.adventure.examination'
+    relocate 'net.kyori.option', 'me.lucko.spark.lib.adventure.option'
+    relocate 'net.bytebuddy', 'me.lucko.spark.lib.bytebuddy'
+    relocate 'com.google.protobuf', 'me.lucko.spark.lib.protobuf'
+    relocate 'org.objectweb.asm', 'me.lucko.spark.lib.asm'
+    relocate 'one.profiler', 'me.lucko.spark.lib.asyncprofiler'
+    relocate 'me.lucko.bytesocks.client', 'me.lucko.spark.lib.bytesocks'
+    relocate 'org.java_websocket', 'me.lucko.spark.lib.bytesocks.ws'
+    project.applyExcludes(delegate)
+}
+
+remapJar {
+    dependsOn shadowJar
+    inputFile = shadowJar.archiveFile
+    archiveClassifier = ''
+}
+
+jar {
+    archiveClassifier = 'dev'
+}
+
+class BTWJarReplacer implements MinecraftJarProcessor<Spec> {
+    String name
+    String path
+
+    @javax.inject.Inject
+    BTWJarReplacer(String name, String path) {
+        this.name = name
+        this.path = path
+    }
+
+    @Override
+    Spec buildSpec(SpecContext context) {
+        return new Spec(path)
+    }
+
+    @Override
+    void processJar(java.nio.file.Path jar, Spec spec, ProcessorContext context) throws IOException {
+        def btwJar = Paths.get(path, 'build_BTW/BTW_dev/BTW_dev.zip')
+        if (!Files.exists(btwJar)) {
+            throw new IOException("BTW_dev.zip not found at ${btwJar}; run install.bat or install.sh first")
+        }
+        Files.copy(btwJar, jar, StandardCopyOption.REPLACE_EXISTING)
+        def javadocJar = Paths.get(path, 'build_BTW/BTW_dev/BTW_dev-javadoc.jar')
+        if (Files.exists(javadocJar)) {
+            Files.copy(javadocJar, jar.resolveSibling(jar.fileName.toString().replace('.jar', '-javadoc.jar')), StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+
+    @Override
+    String getName() {
+        return name
+    }
+
+    class Spec implements MinecraftJarProcessor.Spec {
+        String path
+
+        Spec(String path) {
+            this.path = path
+        }
+
+        @Override
+        int hashCode() {
+            def btwJar = Paths.get(path, 'build_BTW/BTW_dev/BTW_dev.zip')
+            return Files.exists(btwJar) ? Files.getLastModifiedTime(btwJar).hashCode() ^ name.hashCode() : name.hashCode()
+        }
+    }
+}

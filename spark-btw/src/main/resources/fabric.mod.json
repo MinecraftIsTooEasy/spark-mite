@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "spark",
+  "version": "${version}+BTW-${btw_version}",
+  "name": "spark",
+  "description": "Performance profiler for Better Than Wolves Community Edition.",
+  "authors": ["Luck", "Inf1nlty"],
+  "contact": {
+    "homepage": "https://spark.lucko.me/",
+    "sources": "https://github.com/lucko/spark"
+  },
+  "license": "GPL-3.0-or-later",
+  "environment": "*",
+  "entrypoints": {
+    "btw:addon": ["me.lucko.spark.btw.SparkBtwMod"]
+  },
+  "custom": {
+    "btw:addon_prefix": "SPARK"
+  },
+  "mixins": ["spark-btw.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.14.19",
+    "minecraft": "${minecraft_version}",
+    "btw": ">=${btw_version}"
+  }
+}

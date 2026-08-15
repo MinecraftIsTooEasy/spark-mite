@@ -1,4 +1,0 @@
-accessWidener v2 named
-accessible class net/minecraft/LongHashMapEntry
-accessible field net/minecraft/LongHashMapEntry value Ljava/lang/Object;
-accessible field net/minecraft/LongHashMapEntry nextEntry Lnet/minecraft/LongHashMapEntry;

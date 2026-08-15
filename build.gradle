@@ -7,8 +7,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 allprojects {
-    group = 'me.lucko'
-    version = '1.10.0-mite'
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
 subprojects {
@@ -20,19 +20,16 @@ subprojects {
     ext {
         baseVersion = '1.10'
         patchVersion = 0
-        pluginVersion = rootProject.version
+        pluginVersion = rootProject.mod_version
         pluginDescription = 'spark is a performance profiling plugin/mod for Minecraft clients, servers and proxies.'
-
         applyExcludes = { Jar jarTask ->
             jarTask.exclude 'module-info.class'
             jarTask.exclude 'META-INF/maven/**'
             jarTask.exclude 'META-INF/proguard/**'
             jarTask.exclude 'META-INF/LICENSE'
             jarTask.exclude 'META-INF/NOTICE'
-            // protobuf
             jarTask.exclude '**/*.proto'
             jarTask.exclude '**/*.proto.bin'
-            // async-profiler
             jarTask.exclude 'linux-arm64/**'
             jarTask.exclude 'linux-x64/**'
             jarTask.exclude 'macos/**'
@@ -41,7 +38,7 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
-        options.release = 8
+        options.release = 17
     }
 
     tasks.withType(Test).configureEach {
@@ -59,16 +56,15 @@ subprojects {
     }
 
     license {
-        rule(rootProject.file("HEADER.txt"))
+        rule(rootProject.file('HEADER.txt'))
     }
 
     repositories {
-        maven {
-            name = 'ModdedMITE'
-            url = 'https://maven.limingzxc.top/repository/maven-public/'
-        }
+        maven { name = 'Legacy Fabric'; url = 'https://maven.legacyfabric.net' }
+        maven { name = 'Babric'; url = 'https://maven.glass-launcher.net/babric' }
+        maven { url = 'https://api.modrinth.com/maven' }
+        maven { url = 'https://btw-community.github.io/btw-mvn/' }
         mavenCentral()
-        maven { url "https://repo.lucko.me/" }
+        maven { url = 'https://repo.lucko.me/' }
     }
-
 }

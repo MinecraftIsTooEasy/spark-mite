@@ -8,22 +8,21 @@
   spark is a performance profiler for Minecraft clients, servers and proxies.
 </h3>
 
-## MITE 1.6.4 port
+## Better Than Wolves Community Edition 3.1.0 port
 
-This branch contains a FishModLoader 3.4.2 port in the `spark-mite` module. The original `spark-api` and `spark-common` implementations are retained; only the Minecraft platform layer is replaced.
+This branch contains a Fabric Loader 0.18.4 port for [Better Than Wolves Community Edition 3.1.0](https://github.com/BTW-Community/BTW-Public) in the `spark-btw` module. The original `spark-api` and `spark-common` implementations are retained; only the Minecraft platform layer is replaced.
 
 * `/spark` runs the server profiler and is available to the console and operators.
 * `/sparkc` and `/sparkclient` run a profiler in the local client JVM.
 * Tick timings, health reports, Java sampling, heap analysis, GC monitoring, activity logging, player ping, server configuration, world counts, chunk/entity counts, viewer uploads, and the background profiler are supported.
-* MITE has no modern chat component click events. Viewer URLs are emitted as visible chat text and remain detectable by MITE's URL handling.
 * async-profiler does not support Windows; spark automatically uses its built-in Java sampler there. Linux native libraries are included in the release jar.
 
-Build the release jar with `./gradlew :spark-mite:build`. The output is `spark-mite/build/libs/spark-mite-1.10.0-mite.jar` and requires RustedIronCore 1.5.3 or newer.
+Run `install.bat` (or `install.sh`) once to prepare the BTW development jar, then build the release jar with `./gradlew :spark-btw:build`. The output is `spark-btw/build/libs/spark-btw-1.10.0-btw.jar` and requires Better Than Wolves Community Edition 3.1.0 or newer.
 
 #### Useful Links
 * [**Website**](https://spark.lucko.me/) - browse the project homepage
 * [**Documentation**](https://spark.lucko.me/docs) - read documentation and usage guides
-* [**Downloads**](https://spark.lucko.me/download) - latest plugin/mod downloads
+* [**BTW Community Edition**](https://github.com/BTW-Community/BTW-Public) - Better Than Wolves Community Edition source and releases
 
 
 ## What does spark do?
@@ -84,7 +83,7 @@ For a comparison between spark, WarmRoast, Minecraft timings and other profiles,
 
 ## License
 
-spark is free & open source. It is released under the terms of the GNU GPLv3 license. Please see [`LICENSE.txt`](LICENSE.txt) for more information. 
+spark is free & open source. It is released under the terms of the GNU GPLv3 license. Please see [`LICENSE.txt`](LICENSE.txt) for more information.
 
 The spark API submodule is released under the terms of the more permissive MIT license. Please see [`spark-api/LICENSE.txt`](spark-api/LICENSE.txt) for more information.
 

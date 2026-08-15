@@ -1,7 +1,28 @@
+# gradle
 .gradle/
-/.idea/
 build/
+build_BTW/
 out/
-run/
+classes/
+
+# eclipse
+*.launch
+
+# idea
+.idea/
 *.iml
-.DS_Store
+*.ipr
+*.iws
+
+# vscode
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# fabric
+run/
+
+# macos
+*.DS_Store
